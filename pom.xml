@@ -8,6 +8,23 @@
     <artifactId>flink-connector-mongo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
+    <!-- mvn deploy -->
+    <!-- see .m2/settings.xml -->
+    <distributionManagement>
+        <repository>
+            <id>central-releases</id>
+            <name>central-releases</name>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>central-snapshots</id>
+            <name>central-snapshots</name>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
