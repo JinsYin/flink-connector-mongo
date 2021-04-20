@@ -212,6 +212,7 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
                 getDefaultTestDatabaseName(),
                 getDefaultTestCollectionName(),
                 3,
+                3,
                 3
         );
 

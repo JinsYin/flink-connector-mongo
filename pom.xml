@@ -78,13 +78,7 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-planner-blink_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-table-planner-blink_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-<!--            <type>test-jar</type>-->
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <!-- integration test -->
@@ -92,7 +86,6 @@
             <groupId>de.bwaldvogel</groupId>
             <artifactId>mongo-java-server</artifactId>
             <version>${mongodb.server.version}</version>
-<!--            <type>test-jar</type>-->
             <scope>test</scope>
         </dependency>
 

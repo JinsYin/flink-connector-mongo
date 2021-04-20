@@ -14,16 +14,16 @@ public class MongoWriteOptions implements Serializable {
     // ~ instance fields -----------------------------------
 
     private final long maxRetries;
-    private final long bufferFlushMaxRows;    // batch size
-    private final long bufferFlushIntervalMs; // batch interval in millisecond
+    private final int batchSize;    // batch size
+    private final long batchIntervalMs; // batch interval in millisecond
     private final boolean ordered;
 
     // ~ constructors --------------------------------------
 
-    public MongoWriteOptions(long maxRetries, long bufferFlushMaxRows, long bufferFlushIntervalMs, boolean ordered) {
+    public MongoWriteOptions(long maxRetries, int batchSize, long batchIntervalMs, boolean ordered) {
         this.maxRetries = maxRetries;
-        this.bufferFlushMaxRows = bufferFlushMaxRows;
-        this.bufferFlushIntervalMs = bufferFlushIntervalMs;
+        this.batchSize = batchSize;
+        this.batchIntervalMs = batchIntervalMs;
         this.ordered = ordered;
     }
 
@@ -33,12 +33,12 @@ public class MongoWriteOptions implements Serializable {
         return maxRetries;
     }
 
-    public long getBufferFlushMaxRows() {
-        return bufferFlushMaxRows;
+    public int getBatchSize() {
+        return batchSize;
     }
 
-    public long getBufferFlushIntervalMs() {
-        return bufferFlushIntervalMs;
+    public long getBatchIntervalMs() {
+        return batchIntervalMs;
     }
 
     public boolean getOrdered() {
@@ -58,8 +58,8 @@ public class MongoWriteOptions implements Serializable {
      */
     public static final class Builder {
         private long maxRetries = DEFAULT_MAX_RETRIES;
-        private long bufferFlushMaxRows;
-        private long bufferFlushIntervalMs;
+        private int batchSize;
+        private long batchIntervalMs;
         private boolean ordered = DEFAULT_ORDERED;
 
         /**
@@ -73,16 +73,16 @@ public class MongoWriteOptions implements Serializable {
         /**
          * optional, max batch size
          */
-        public Builder setBufferFlushMaxRows(long bufferFlushMaxRows) {
-            this.bufferFlushMaxRows = bufferFlushMaxRows;
+        public Builder setBatchSize(int batchSize) {
+            this.batchSize = batchSize;
             return this;
         }
 
         /**
          * optional, batch interval in millisecond
          */
-        public Builder setBufferFlushMaxIntervalMs(long bufferFlushIntervalMs) {
-            this.bufferFlushIntervalMs = bufferFlushIntervalMs;
+        public Builder setBatchIntervalMs(long batchIntervalMs) {
+            this.batchIntervalMs = batchIntervalMs;
             return this;
         }
 
@@ -98,7 +98,7 @@ public class MongoWriteOptions implements Serializable {
         }
 
         public MongoWriteOptions build() {
-            return new MongoWriteOptions(maxRetries, bufferFlushMaxRows, bufferFlushIntervalMs, ordered);
+            return new MongoWriteOptions(maxRetries, batchSize, batchIntervalMs, ordered);
         }
     }
 }

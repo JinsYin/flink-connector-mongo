@@ -4,7 +4,6 @@ import cn.guruguru.flink.connector.mongo.internal.options.MongoLookupOptions;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoOptions;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoReadOptions;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoWriteOptions;
-import cn.guruguru.flink.connector.mongo.util.MongoTableSchema;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.ReadableConfig;
@@ -164,7 +163,7 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
         validateConfigOptions(config);
 
         TableSchema tableSchema = TableSchemaUtils.getPhysicalSchema(context.getCatalogTable().getSchema());
-        MongoTableSchema mongoTableSchema = MongoTableSchema.fromTableSchema(tableSchema); // TableSchema is not serializable
+        //MongoTableSchema mongoTableSchema = MongoTableSchema.fromTableSchema(tableSchema); // TableSchema is not serializable
 
         // 要求每个参数对象必须可序列化
         return new MongoDynamicTableSink(
@@ -187,8 +186,8 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
     private MongoWriteOptions getMongoWriteOptions(ReadableConfig config) {
         return MongoWriteOptions.builder()
                 .setMaxRetries(config.get(SINK_MAX_RETRIES))
-                .setBufferFlushMaxRows(config.get(SINK_BUFFER_FLUSH_MAX_ROWS))
-                .setBufferFlushMaxIntervalMs(config.get(SINK_BUFFER_FLUSH_INTERVAL).toMillis())
+                .setBatchSize(config.get(SINK_BUFFER_FLUSH_MAX_ROWS))
+                .setBatchIntervalMs(config.get(SINK_BUFFER_FLUSH_INTERVAL).toMillis())
                 .build();
     }
 
@@ -220,8 +219,6 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
     public Set<ConfigOption<?>> requiredOptions() {
         Set<ConfigOption<?>> requiredOptions = new HashSet<>();
         requiredOptions.add(URI);
-        requiredOptions.add(DATABASE);
-        requiredOptions.add(COLLECTION);
         return requiredOptions;
     }
 
@@ -256,6 +253,11 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
         checkAllOrNone(config, new ConfigOption[]{
             LOOKUP_CACHE_MAX_ROWS,
             LOOKUP_CACHE_TTL
+        });
+
+        checkAllOrNone(config, new ConfigOption[]{
+            DATABASE,
+            COLLECTION
         });
     }
 

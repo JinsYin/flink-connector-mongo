@@ -4,16 +4,12 @@ import cn.guruguru.flink.connector.mongo.MongoTestingClusterAutoStarter;
 import cn.guruguru.flink.connector.mongo.internal.conveter.RowDataMongoConverter;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.data.GenericRowData;
-import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.data.StringData;
-import org.apache.flink.table.types.logical.CharType;
-import org.apache.flink.table.types.logical.IntType;
-import org.apache.flink.table.types.logical.RowType;
+import org.apache.flink.table.data.*;
+import org.apache.flink.table.types.logical.*;
 import org.apache.flink.types.RowKind;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
 
@@ -21,7 +17,15 @@ public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
     public void testSinkRowData() throws Exception {
         RowType rowType = new RowType(Arrays.asList(
                 new RowType.RowField("name", new CharType()),
-                new RowType.RowField("age", new IntType())
+                new RowType.RowField("age", new IntType()),
+                new RowType.RowField("scores", new ArrayType(new DoubleType())),
+                new RowType.RowField("map", new MapType(new CharType(), new IntType())),
+                new RowType.RowField("info", new RowType(Arrays.asList(
+                        new RowType.RowField("col1", new CharType()),
+                        new RowType.RowField("col2", new ArrayType(new DoubleType())),
+                        new RowType.RowField("col3", new RowType(
+                                Collections.singletonList(new RowType.RowField("colcol", new CharType()))))
+                )))
         ));
         RowDataMongoConverter rowDataMongoConverter = new RowDataMongoConverter(rowType);
 
@@ -32,14 +36,54 @@ public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
                 getDefaultTestDatabaseName(),
                 getDefaultTestCollectionName(),
                 3,
+                3,
                 3
         );
 
         // data
-        GenericRowData row1 = GenericRowData.of(StringData.fromString("alice"), 20);
-        GenericRowData row2 = GenericRowData.of(StringData.fromString("bob"), 21);
-        GenericRowData row3 = GenericRowData.of(StringData.fromString("tom"), 22);
-        GenericRowData row4 = GenericRowData.of(StringData.fromString("john"), 23);
+        Map<StringData, Integer> genericMap = new HashMap<>();
+        genericMap.put(StringData.fromString("k1"), 1);
+        genericMap.put(StringData.fromString("k2"), 2);
+        GenericRowData row1 = GenericRowData.of(
+                StringData.fromString("alice"),
+                20,
+                new GenericArrayData(new double[]{95.1, 95.2}),
+                new GenericMapData(genericMap),
+                GenericRowData.of(
+                    StringData.fromString("k1"),
+                    new GenericArrayData(new double[]{95.1, 95.2}),
+                    GenericRowData.of(StringData.fromString("cc1")
+                )));
+        GenericRowData row2 = GenericRowData.of(
+                StringData.fromString("bob"),
+                21,
+                new GenericArrayData(new double[]{96.1, 96.2}),
+                new GenericMapData(genericMap),
+                GenericRowData.of(
+                    StringData.fromString("k2"),
+                    new GenericArrayData(new double[]{96.1, 96.2}),
+                    GenericRowData.of(StringData.fromString("cc2"))
+                ));
+        GenericRowData row3 = GenericRowData.of(
+                StringData.fromString("tom"),
+                22,
+                new GenericArrayData(new double[]{97.1, 97.2}),
+                new GenericMapData(genericMap),
+                GenericRowData.of(
+                    StringData.fromString("k3"),
+                    new GenericArrayData(new double[]{97.1, 97.2}),
+                    GenericRowData.of(StringData.fromString("cc3"))
+                ));
+        GenericRowData row4 = GenericRowData.of(
+                StringData.fromString("john"),
+                23,
+                new GenericArrayData(new double[]{98.1, 98.2}),
+                new GenericMapData(genericMap),
+                GenericRowData.of(
+                    StringData.fromString("k4"),
+                    new GenericArrayData(new double[]{98.1, 98.2}),
+                    GenericRowData.of(StringData.fromString("cc4"))
+                ));
 
         row1.setRowKind(RowKind.INSERT);
         row2.setRowKind(RowKind.DELETE);

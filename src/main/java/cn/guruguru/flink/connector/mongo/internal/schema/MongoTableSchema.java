@@ -1,4 +1,4 @@
-package cn.guruguru.flink.connector.mongo.util;
+package cn.guruguru.flink.connector.mongo.internal.schema;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.DataTypes;
@@ -8,6 +8,9 @@ import org.apache.flink.table.types.logical.LogicalType;
 
 import java.io.Serializable;
 
+/**
+ * GeoJSON + BSON ?
+ */
 @Internal
 public class MongoTableSchema implements Serializable {
 
