@@ -1,6 +1,6 @@
 package cn.guruguru.flink.connector.mongo.table;
 
-import cn.guruguru.flink.connector.mongo.internal.conveter.RowDataMongoConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MongoRowDataSerializationConverter;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoOptions;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoWriteOptions;
 import cn.guruguru.flink.connector.mongo.sink.MongoRowDataSinkFunction;
@@ -46,12 +46,12 @@ public class MongoDynamicTableSink implements DynamicTableSink {
     @Override
     public SinkFunctionProvider getSinkRuntimeProvider(Context context) {
         RowType rowType = (RowType) tableSchema.toPhysicalRowDataType().getLogicalType();
-        RowDataMongoConverter rowDataMongoConverter = new RowDataMongoConverter(rowType);
+        MongoRowDataSerializationConverter serConverter = new MongoRowDataSerializationConverter(rowType);
 
         context.createDataStructureConverter(tableSchema.toPhysicalRowDataType());
 
         MongoRowDataSinkFunction sinkFunction = new MongoRowDataSinkFunction(
-                rowDataMongoConverter,
+                serConverter,
                 mongoOptions.getUri(),
                 mongoOptions.getDatabaseName(),
                 mongoOptions.getCollectionName(),

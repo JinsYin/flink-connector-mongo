@@ -1,7 +1,7 @@
 package cn.guruguru.flink.connector.mongo.source;
 
 import cn.guruguru.flink.connector.mongo.internal.connection.DefaultMongoClientFactory;
-import cn.guruguru.flink.connector.mongo.internal.conveter.MongoDeserializationConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MgDeserializationConverter;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -27,7 +27,7 @@ public class MongoRowDataSourceFunction<RowData> extends RichSourceFunction<RowD
 
     private static final long serialVersionUID = 1L;
 
-    private final MongoDeserializationConverter<RowData> deserConverter; // MongoConverter is serializable
+    private final MgDeserializationConverter<RowData> deserConverter; // MongoConverter is serializable
     private final String uri;
     private final String databaseName;
     private final String collectionName;
@@ -38,7 +38,7 @@ public class MongoRowDataSourceFunction<RowData> extends RichSourceFunction<RowD
     private transient MongoCollection<BsonDocument> mongoCollection;
 
     public MongoRowDataSourceFunction(
-            MongoDeserializationConverter<RowData> deserConverter,
+            MgDeserializationConverter<RowData> deserConverter,
             String uri,
             String databaseName,
             String collectionName,

@@ -1,6 +1,6 @@
 package cn.guruguru.flink.connector.mongo.table;
 
-import cn.guruguru.flink.connector.mongo.internal.conveter.RowDataMongoConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MongoRowDataDeserializationConverter;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoLookupOptions;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoOptions;
 import cn.guruguru.flink.connector.mongo.internal.options.MongoReadOptions;
@@ -60,7 +60,7 @@ public class MongoDynamicTableSource implements ScanTableSource, LookupTableSour
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
         RowType rowType = (RowType) tableSchema.toPhysicalRowDataType().getLogicalType();
-        RowDataMongoConverter deserConverter = new RowDataMongoConverter(rowType);
+        MongoRowDataDeserializationConverter deserConverter = new MongoRowDataDeserializationConverter(rowType);
         MongoRowDataSourceFunction<RowData> sourceFunction = new MongoRowDataSourceFunction<>(
                 deserConverter,
                 mongoOptions.getUri(),
@@ -84,7 +84,7 @@ public class MongoDynamicTableSource implements ScanTableSource, LookupTableSour
     @Override
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
         RowType rowType = (RowType) tableSchema.toPhysicalRowDataType().getLogicalType();
-        RowDataMongoConverter deserConverter = new RowDataMongoConverter(rowType);
+        MongoRowDataDeserializationConverter deserConverter = new MongoRowDataDeserializationConverter(rowType);
 
         MongoRowDataLookupFunction lookupFunction = new MongoRowDataLookupFunction(
                 deserConverter,

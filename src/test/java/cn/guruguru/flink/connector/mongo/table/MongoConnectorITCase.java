@@ -1,7 +1,8 @@
 package cn.guruguru.flink.connector.mongo.table;
 
 import cn.guruguru.flink.connector.mongo.MongoTestingClusterAutoStarter;
-import cn.guruguru.flink.connector.mongo.internal.conveter.RowDataMongoConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MongoRowDataDeserializationConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MongoRowDataSerializationConverter;
 import cn.guruguru.flink.connector.mongo.sink.MongoRowDataSinkFunction;
 import cn.guruguru.flink.connector.mongo.source.MongoRowDataSourceFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -148,9 +149,9 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
         SourceFunction<RowData> sourceFunction = sourceFunctionProvider.createSourceFunction();
 
         RowType rowType = (RowType) tableSchema.toPhysicalRowDataType().getLogicalType();
-        RowDataMongoConverter rowDataMongoConverter = new RowDataMongoConverter(rowType);
+        MongoRowDataDeserializationConverter deserConverter = new MongoRowDataDeserializationConverter(rowType);
         MongoRowDataSourceFunction<RowData> sourceFunction1 = new MongoRowDataSourceFunction<RowData>(
-                rowDataMongoConverter,
+                deserConverter,
                 getTestMongoUri(),
                 getDefaultTestDatabaseName(),
                 getDefaultTestCollectionName(),
@@ -205,9 +206,9 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
         SinkFunction<RowData> sinkFunction = sinkFunctionProvider.createSinkFunction();
 
         RowType rowType = (RowType) tableSchema.toPhysicalRowDataType().getLogicalType();
-        RowDataMongoConverter rowDataMongoConverter = new RowDataMongoConverter(rowType);
+        MongoRowDataSerializationConverter serConverter = new MongoRowDataSerializationConverter(rowType);
         MongoRowDataSinkFunction sinkFunction1 = new MongoRowDataSinkFunction(
-                rowDataMongoConverter,
+                serConverter,
                 getTestMongoUri(),
                 getDefaultTestDatabaseName(),
                 getDefaultTestCollectionName(),
@@ -231,7 +232,7 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
 
         // ~ expected BsonDocument
         BsonDocument expected = new BsonDocument();
-        rowDataMongoConverter.toExternal(rowData, expected);
+        serConverter.toExternal(rowData, expected);
 
         assertEquals(expected, actual);
     }

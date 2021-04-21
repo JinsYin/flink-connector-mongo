@@ -1,9 +1,12 @@
 package cn.guruguru.flink.connector.mongo.internal.converter;
 
-import cn.guruguru.flink.connector.mongo.internal.conveter.RowDataMongoConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MongoRowDataSerializationConverter;
+import org.apache.flink.core.memory.MemorySegment;
+import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.*;
+import org.apache.flink.table.data.binary.BinaryRowData;
 import org.apache.flink.table.types.logical.RowType;
 import org.bson.*;
 import org.bson.types.Decimal128;
@@ -13,17 +16,20 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Unit Test for {@link RowDataMongoConverter}
+ * Unit Test for {@link MongoRowDataSerializationConverter}
  */
-public class RowDataMongoConverterTest {
+public class MongoRowDataSerConverterTest {
 
     /**
-     * @see RowDataMongoConverter#toExternal(RowData, BsonDocument)
+     * 注：ROW.ROW 类型可能必须是 {@link BinaryRowData}，甚至最外层的 ROW 也应该是 {@link BinaryRowData}
+     * see MongoRowDataSerializationConverter#createNotNullExternalSetter(LogicalType, String)
+     * @see MongoRowDataSerializationConverter#toExternal(RowData, BsonDocument)
      */
     @Test
     public void testToExternal() {
@@ -67,6 +73,7 @@ public class RowDataMongoConverterTest {
                     )
                 ))
                 .field("q", DataTypes.DECIMAL(20, 3)) // precision = 10, scale = 3
+                .field("r", DataTypes.ROW(DataTypes.FIELD("binrow", DataTypes.INT())))
                 .primaryKey("k", "f", "c")
                 .build();
         RowType rowType = tableSchemaToRowType(tableSchema);
@@ -89,6 +96,11 @@ public class RowDataMongoConverterTest {
         };
         GenericArrayData arrayData2 = new GenericArrayData(rowObjects);
 
+        MemorySegment segment = MemorySegmentFactory.wrap(new byte[16]);
+        BinaryRowData binRowData = new BinaryRowData(1);
+        binRowData.pointTo(segment, 0, 16);
+        binRowData.setInt(0, 100);
+
         GenericRowData rowData = GenericRowData.of(
                 null,
                 true,
@@ -106,13 +118,14 @@ public class RowDataMongoConverterTest {
                 new GenericMapData(map2),
                 arrayData1,
                 arrayData2,
-                new BigDecimal("12345678.1567")
+                new BigDecimal("12345678.1567"),
+                binRowData
         );
 
         // ~ converted mongodb data
 
-        RowDataMongoConverter converter = new RowDataMongoConverter(rowType);
-        BsonDocument actual = converter.toExternal(rowData, new BsonDocument());
+        MongoRowDataSerializationConverter serConverter = new MongoRowDataSerializationConverter(rowType);
+        BsonDocument actual = serConverter.toExternal(rowData, new BsonDocument());
 
         // ~ expected mongodb data
 
@@ -126,7 +139,7 @@ public class RowDataMongoConverterTest {
         expected.append("g", new BsonInt64(123456789L));
         expected.append("h", new BsonDateTime(TimeUnit.DAYS.toMillis(2))); // 2d
         expected.append("i", new BsonDateTime(1000)); // 1s
-        expected.append("j", new BsonTimestamp(TimestampData
+        expected.append("j", new BsonDateTime(TimestampData
                 .fromLocalDateTime(LocalDateTime.parse("2012-12-12T12:12:12")).getMillisecond()));
         expected.append("k", new BsonString("NBA"));
         expected.append("l", new BsonDocument(Arrays.asList(
@@ -164,15 +177,13 @@ public class RowDataMongoConverterTest {
                 ))
         )));
         expected.append("q", new BsonDecimal128(new Decimal128(new BigDecimal("12345678.157"))));
+        expected.append("r", new BsonDocument(Collections.singletonList(
+                new BsonElement("binrow", new BsonInt32(100))
+        )));
 
         Assert.assertEquals(expected, actual);
     }
 
-    @Test
-    public void testToInternal() {
-        BsonDocument expected = new BsonDocument();
-        expected.append("a", new BsonDouble(1.2f));
-    }
 
     /**
      * TODO

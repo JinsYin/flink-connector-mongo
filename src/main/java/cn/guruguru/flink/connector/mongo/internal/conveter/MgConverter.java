@@ -10,5 +10,5 @@ import java.io.Serializable;
  * and converts MongoDB {@link BsonDocument} into interval data structure.
  */
 @Internal
-public interface MongoConverter extends Serializable {
+public interface MgConverter extends Serializable {
 }

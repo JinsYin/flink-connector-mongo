@@ -228,6 +228,8 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
     @Override
     public Set<ConfigOption<?>> optionalOptions() {
         Set<ConfigOption<?>> optionalOptions = new HashSet<>();
+        optionalOptions.add(DATABASE);
+        optionalOptions.add(COLLECTION);
         optionalOptions.add(SCAN_FETCH_SIZE);
         optionalOptions.add(SCAN_EXCLUDE_ID);
         optionalOptions.add(LOOKUP_CACHE_MAX_ROWS);

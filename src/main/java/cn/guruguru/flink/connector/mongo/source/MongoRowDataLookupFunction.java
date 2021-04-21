@@ -1,7 +1,7 @@
 package cn.guruguru.flink.connector.mongo.source;
 
 import cn.guruguru.flink.connector.mongo.internal.connection.DefaultMongoClientFactory;
-import cn.guruguru.flink.connector.mongo.internal.conveter.MongoDeserializationConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MgDeserializationConverter;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -33,13 +33,13 @@ public class MongoRowDataLookupFunction extends TableFunction<RowData> { // @Int
     private final int maxRetries;
     private boolean excludeId = true;
 
-    private final MongoDeserializationConverter<RowData> deserConverter;
+    private final MgDeserializationConverter<RowData> deserConverter;
 
     private MongoClient mongoClient;
     private MongoCollection mongoCollection;
 
     public MongoRowDataLookupFunction(
-            MongoDeserializationConverter<RowData> deserConverter,
+            MgDeserializationConverter<RowData> deserConverter,
             String uri,
             String databaseName,
             String collectionName,

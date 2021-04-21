@@ -1,12 +1,15 @@
 package cn.guruguru.flink.connector.mongo.sink;
 
 import cn.guruguru.flink.connector.mongo.internal.connection.DefaultMongoClientFactory;
-import cn.guruguru.flink.connector.mongo.internal.conveter.MongoSerializationConverter;
+import cn.guruguru.flink.connector.mongo.internal.conveter.MgSerializationConverter;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.state.FunctionInitializationContext;
+import org.apache.flink.runtime.state.FunctionSnapshotContext;
+import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.table.data.RowData;
 import org.bson.BsonDocument;
@@ -18,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
-public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> {
+public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implements CheckpointedFunction {
 
     private static final long serialVersionUID = 1L;
 
@@ -26,7 +29,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> {
 
     private static final BulkWriteOptions BULK_WRITE_OPTIONS = new BulkWriteOptions();
 
-    private final MongoSerializationConverter<RowData> mongoConverter; // MongoConverter is serializable
+    private final MgSerializationConverter<RowData> mongoSerConverter; // MongoSerializationConverter is serializable
     private final String uri;
     private final String databaseName;
     private final String collectionName;
@@ -44,14 +47,14 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> {
     private transient ScheduledFuture scheduledFuture;
 
     public MongoRowDataSinkFunction(
-            MongoSerializationConverter<RowData> mongoConverter,
+            MgSerializationConverter<RowData> mongoSerConverter,
             String uri,
             String databaseName,
             String collectionName,
             long maxRetries,
             int batchSize,
             long batchIntervalMs) {
-        this.mongoConverter = mongoConverter;
+        this.mongoSerConverter = mongoSerConverter;
         this.uri = uri;
         this.databaseName = databaseName;
         this.collectionName = collectionName;
@@ -80,39 +83,42 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> {
     /**
      * Save data to MongoDB
      *
+     * see cn.guruguru.flink.connector.jdbc.internal.JdbcBatchingOutputFormat
      * @see com.mongodb.client.model.InsertManyOptions
      * @see BulkWriteOptions
-     * @see cn.guruguru.flink.connector.jdbc.internal.JdbcBatchingOutputFormat
      * @see <a href="https://stackoverflow.com/questions/35758690/mongodb-insertmany-vs-bulkwrite">InsertMany vs BulkWrite</a>
      */
     @Override
-    public void invoke(RowData rowData, Context context) throws Exception {
-        BsonDocument bsonDocument = new BsonDocument();
+    public void invoke(RowData rowData, Context context) {
         // Convert the RowData to the BsonDocument
-        bsonDocument = mongoConverter.toExternal(rowData, bsonDocument);
+        BsonDocument bsonDocument = mongoSerConverter.toExternal(rowData);
 
         // Insert one
         mgCollection.insertOne(bsonDocument);
 
         // Bulk write
-//        for (int i = 0; i <= maxRetries; i++) {
-//            try {
-//                addToBatch(bsonDocument);
-//                batchCount++;
-//                if (batchCount % batchSize == 0) { // interval time ?
-//                    executeBatch(batch);
-//                    batchCount = 0;
-//                    batch = new ArrayList<>();
-//                }
-//                break;
-//            } catch (Exception e) {
-//                LOG.error("MongoDB insertMany error, retry times = {}", i, e);
-//                if (i >= maxRetries) {
-//                    throw new IOException(e);
-//                }
-//                // retry connect mongodb
-//            }
-//        }
+        //flush(bsonDocument);
+    }
+
+    private void flush(BsonDocument bsonDocument) throws MongoSinkException {
+        for (int i = 0; i <= maxRetries; i++) {
+            try {
+                addToBatch(bsonDocument);
+                batchCount++;
+                if (batchCount % batchSize == 0) { // interval time ?
+                    executeBatch(batch);
+                    batchCount = 0;
+                    batch = new ArrayList<>();
+                }
+                break;
+            } catch (Exception e) {
+                LOG.error("MongoDB insertMany error, retry times = {}", i, e);
+                if (i >= maxRetries) {
+                    throw new MongoSinkException("Mongo retry error");
+                }
+                // retry connect mongodb
+            }
+        }
     }
 
     private void addToBatch(BsonDocument bsonDocument) {
@@ -148,13 +154,13 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> {
 
     // --------------- CheckpointedFunction ---------------
 
-//    @Override
-//    public void snapshotState(FunctionSnapshotContext context) throws Exception {
-//
-//    }
-//
-//    @Override
-//    public void initializeState(FunctionInitializationContext context) throws Exception {
-//
-//    }
+    @Override
+    public void snapshotState(FunctionSnapshotContext context) throws Exception {
+
+    }
+
+    @Override
+    public void initializeState(FunctionInitializationContext context) throws Exception {
+
+    }
 }
