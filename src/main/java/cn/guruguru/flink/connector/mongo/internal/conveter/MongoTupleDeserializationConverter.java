@@ -10,7 +10,7 @@ public class MongoTupleDeserializationConverter implements MgDeserializationConv
     }
 
     @Override
-    public Object toInternal(Object o, BsonDocument bsonDocument) throws MongoTypeConversionException {
+    public Object toInternal(BsonDocument bsonDocument, Object o) throws MongoTypeConversionException {
         return null;
     }
 }

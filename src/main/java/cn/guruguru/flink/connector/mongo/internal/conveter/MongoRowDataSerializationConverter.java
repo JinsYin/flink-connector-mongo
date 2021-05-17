@@ -230,7 +230,6 @@ public class MongoRowDataSerializationConverter implements MgSerializationConver
      *
      * @see <a href="https://stackoverflow.com/questions/57487414/how-to-understand-bson-timestamp"></a>
      * @see <a href="https://pymongo.readthedocs.io/en/stable/api/bson/timestamp.html"></a>
-     * @param tsType
      */
     private MongoSerializationConverter createExternalTimestampConverter(TimestampType tsType) {
         return (Object value) -> {

@@ -13,7 +13,7 @@ public class MongoPojoDeserializationConverter<T> implements MgDeserializationCo
     }
 
     @Override
-    public T toInternal(T t, BsonDocument bsonDocument) throws MongoTypeConversionException {
+    public T toInternal(BsonDocument bsonDocument, T data) throws MongoTypeConversionException {
         return null;
     }
 }

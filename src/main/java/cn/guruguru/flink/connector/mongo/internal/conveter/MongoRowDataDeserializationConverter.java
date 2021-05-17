@@ -49,7 +49,7 @@ public class MongoRowDataDeserializationConverter implements MgDeserializationCo
     }
 
     @Override
-    public RowData toInternal(RowData rowdata, BsonDocument bsonDocument) throws MongoTypeConversionException {
+    public RowData toInternal(BsonDocument bsonDocument, RowData rowdata) throws MongoTypeConversionException {
         for (int i = 0; i < bsonDocument.size(); i++) {
             toInternalSetters[i].set((GenericRowData) rowdata, i, bsonDocument);
         }

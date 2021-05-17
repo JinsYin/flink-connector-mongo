@@ -8,5 +8,5 @@ public interface MgDeserializationConverter<T> extends MgConverter {
      */
     T toInternal(BsonDocument bsonDocument) throws MongoTypeConversionException;
 
-    T toInternal(T t, BsonDocument bsonDocument) throws MongoTypeConversionException;
+    T toInternal(BsonDocument bsonDocument, T data) throws MongoTypeConversionException;
 }
