@@ -214,7 +214,8 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
                 getDefaultTestCollectionName(),
                 3,
                 3,
-                3
+                3,
+                true
         );
 
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();

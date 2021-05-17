@@ -57,7 +57,8 @@ public class MongoDynamicTableSink implements DynamicTableSink {
                 mongoOptions.getCollectionName(),
                 writeOptions.getMaxRetries(),
                 writeOptions.getBatchSize(),
-                writeOptions.getBatchIntervalMs());
+                writeOptions.getBatchIntervalMs(),
+                writeOptions.getOrdered());
         return SinkFunctionProvider.of(sinkFunction);
     }
 

@@ -45,7 +45,8 @@ public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
                 getDefaultTestCollectionName(),
                 3,
                 3,
-                3
+                3,
+                true
         );
 
         // data

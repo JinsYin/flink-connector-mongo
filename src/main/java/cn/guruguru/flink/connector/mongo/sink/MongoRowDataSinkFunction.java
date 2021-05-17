@@ -5,6 +5,7 @@ import cn.guruguru.flink.connector.mongo.internal.conveter.MgSerializationConver
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
@@ -36,6 +37,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
     private final long maxRetries;
     private final int batchSize;
     private final long batchIntervalMs;
+    private final boolean ordered;
 
     private List<BsonDocument> batch = new ArrayList<>();
     private int batchCount = 0;
@@ -53,7 +55,8 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
             String collectionName,
             long maxRetries,
             int batchSize,
-            long batchIntervalMs) {
+            long batchIntervalMs,
+            boolean ordered) {
         this.mongoSerConverter = mongoSerConverter;
         this.uri = uri;
         this.databaseName = databaseName;
@@ -61,6 +64,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
         this.maxRetries = maxRetries;
         this.batchSize = batchSize;
         this.batchIntervalMs = batchIntervalMs;
+        this.ordered = ordered;
     }
 
     // --------------- AbstractRichFunction ---------------
@@ -82,11 +86,6 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
 
     /**
      * Save data to MongoDB
-     *
-     * see cn.guruguru.flink.connector.jdbc.internal.JdbcBatchingOutputFormat
-     * @see com.mongodb.client.model.InsertManyOptions
-     * @see BulkWriteOptions
-     * @see <a href="https://stackoverflow.com/questions/35758690/mongodb-insertmany-vs-bulkwrite">InsertMany vs BulkWrite</a>
      */
     @Override
     public void invoke(RowData rowData, Context context) {
@@ -125,12 +124,19 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
         batch.add(bsonDocument);
     }
 
+    /**
+     * see cn.guruguru.flink.connector.jdbc.internal.JdbcBatchingOutputFormat
+     * @see com.mongodb.client.model.InsertManyOptions
+     * @see BulkWriteOptions
+     * @see <a href="https://stackoverflow.com/questions/35758690/mongodb-insertmany-vs-bulkwrite">InsertMany vs BulkWrite</a>
+     */
     private void executeBatch(List<BsonDocument> bsonDocumentList) {
         LOG.debug("Bulk writing {} document(s) into collection [{}]",
                 batchSize,
                     mgCollection);
-        InsertManyResult result = mgCollection.insertMany(bsonDocumentList);
-        LOG.debug("Mongodb bulk write result: {}", result);
+        InsertManyOptions insertManyOptions = new InsertManyOptions().ordered(this.ordered);
+        InsertManyResult result = mgCollection.insertMany(bsonDocumentList, insertManyOptions);
+        LOG.debug("MongoDB bulk write result: {}", result);
     }
 
     // --------------- AbstractRichFunction ---------------
@@ -141,7 +147,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
             try {
                 mgClient.close();
             } catch (Exception e) {
-                LOG.error("close exception.");
+                LOG.error("MongoDB client close exception.");
             }
             this.mgClient = null;
         }
@@ -149,7 +155,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
 
     @Override
     public String toString() {
-        return "Mongodb";
+        return "MongoDB";
     }
 
     // --------------- CheckpointedFunction ---------------

@@ -9,7 +9,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 public class MongoOptions implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public static final String DEFAULT_URI = "mongodb://127.0.0.1:27017";
+    public static final String DEFAULT_MONGO_URI = "mongodb://127.0.0.1:27017";
     public static final long DEFAULT_LOCAL_THRESHOLD = MILLISECONDS.convert(15, MILLISECONDS);
     public static final long DEFAULT_CONNECTION_TIMEOUT = MILLISECONDS.convert(30, TimeUnit.SECONDS);
 
@@ -45,7 +45,7 @@ public class MongoOptions implements Serializable {
      * Builder for {@link MongoOptions}
      */
     public static final class Builder {
-        private String uri = DEFAULT_URI;
+        private String uri = DEFAULT_MONGO_URI;
         private String databaseName;
         private String collectionName;
 

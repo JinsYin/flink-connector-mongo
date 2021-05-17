@@ -19,10 +19,7 @@ import org.apache.flink.util.Preconditions;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
-
-import static org.apache.flink.shaded.guava18.com.google.common.base.Preconditions.checkState;
 
 /**
  * @see org.apache.flink.table.factories.DataGenTableSourceFactory
@@ -180,6 +177,7 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
         // 针对没有默认值且又是可选的 WITH 选项
         config.getOptional(DATABASE).ifPresent(builder::setDatabaseName);
         config.getOptional(COLLECTION).ifPresent(builder::setCollectionName);
+
         return builder.build();
     }
 
@@ -188,6 +186,7 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
                 .setMaxRetries(config.get(SINK_MAX_RETRIES))
                 .setBatchSize(config.get(SINK_BUFFER_FLUSH_MAX_ROWS))
                 .setBatchIntervalMs(config.get(SINK_BUFFER_FLUSH_INTERVAL).toMillis())
+                .setOrdered(config.get(SINK_ORDERED))
                 .build();
     }
 
@@ -219,6 +218,8 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
     public Set<ConfigOption<?>> requiredOptions() {
         Set<ConfigOption<?>> requiredOptions = new HashSet<>();
         requiredOptions.add(URI);
+        requiredOptions.add(DATABASE);
+        requiredOptions.add(COLLECTION);
         return requiredOptions;
     }
 
@@ -228,8 +229,6 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
     @Override
     public Set<ConfigOption<?>> optionalOptions() {
         Set<ConfigOption<?>> optionalOptions = new HashSet<>();
-        optionalOptions.add(DATABASE);
-        optionalOptions.add(COLLECTION);
         optionalOptions.add(SCAN_FETCH_SIZE);
         optionalOptions.add(SCAN_EXCLUDE_ID);
         optionalOptions.add(LOOKUP_CACHE_MAX_ROWS);
@@ -248,18 +247,10 @@ public class MongoDynamicTableFactory implements DynamicTableSourceFactory, Dyna
      * 验证配置选项
      */
     private void validateConfigOptions(ReadableConfig config) {
-        Optional<String> mongodbUri = config.getOptional(URI);
-        checkState(mongodbUri.isPresent(), "Cannot handle such MongoDB uri: " + mongodbUri);
-
         // "lookup.cache.max-rows" 和 "lookup.cache.ttl" 选项要么两者都被指定，要么都不指定
         checkAllOrNone(config, new ConfigOption[]{
             LOOKUP_CACHE_MAX_ROWS,
             LOOKUP_CACHE_TTL
-        });
-
-        checkAllOrNone(config, new ConfigOption[]{
-            DATABASE,
-            COLLECTION
         });
     }
 
