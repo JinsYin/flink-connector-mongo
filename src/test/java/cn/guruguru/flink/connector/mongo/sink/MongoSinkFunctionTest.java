@@ -64,7 +64,7 @@ public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
         // data for replacing
         GenericRowData replacedRow = GenericRowData.of(
                 StringData.fromString("alice"),
-                40,
+                20,
                 GenericRowData.of(10003, StringData.fromString("info")));
         BsonDocument replacedDoc = serConverter.toExternal(replacedRow);
 
@@ -83,7 +83,7 @@ public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
         assertEquals(insertedResult, Arrays.asList(appendedDoc, insertedDoc));
 
         // upsert (replace)
-        MongoRowDataSinkFunction upsertSinkFunction2 = createSinkFunction(serConverter, "name");
+        MongoRowDataSinkFunction upsertSinkFunction2 = createSinkFunction(serConverter, "name", "age");
         executeSink(upsertSinkFunction2, replacedRow);
         List<BsonDocument> replacedResult = findAllDocuments();
         assertEquals(replacedResult.size(), 2);
