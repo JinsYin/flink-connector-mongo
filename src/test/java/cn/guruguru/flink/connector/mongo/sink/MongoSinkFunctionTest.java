@@ -47,46 +47,47 @@ public class MongoSinkFunctionTest extends MongoTestingClusterAutoStarter {
         MongoRowDataSerializationConverter serConverter = new MongoRowDataSerializationConverter(rowType);
 
         // data for appending
-        GenericRowData originRow = GenericRowData.of(
+        GenericRowData appendedRow = GenericRowData.of(
                 StringData.fromString("alice"),
                 20,
                 GenericRowData.of(10001, StringData.fromString("error")));
-        originRow.setRowKind(RowKind.INSERT);
-        BsonDocument originDoc = serConverter.toExternal(originRow);
+        appendedRow.setRowKind(RowKind.INSERT);
+        BsonDocument appendedDoc = serConverter.toExternal(appendedRow);
 
-        // data for non-replacement
-        GenericRowData nonReplacementRow = GenericRowData.of(
+        // data for inserting
+        GenericRowData insertedRow = GenericRowData.of(
                 StringData.fromString("john"),
                 30,
                 GenericRowData.of(10002, StringData.fromString("warn")));
+        BsonDocument insertedDoc = serConverter.toExternal(insertedRow);
 
         // data for replacing
-        GenericRowData replacementRow = GenericRowData.of(
+        GenericRowData replacedRow = GenericRowData.of(
                 StringData.fromString("alice"),
                 40,
                 GenericRowData.of(10003, StringData.fromString("info")));
-        BsonDocument replacementDoc = serConverter.toExternal(replacementRow);
+        BsonDocument replacedDoc = serConverter.toExternal(replacedRow);
 
         // append
         MongoRowDataSinkFunction appendSinkFunction = createSinkFunction(serConverter);
-        executeSink(appendSinkFunction, originRow);
-        List<BsonDocument> appendResult = findAllDocuments();
-        assertEquals(appendResult.size(), 1);
-        assertEquals(originDoc, appendResult.get(0));
+        executeSink(appendSinkFunction, appendedRow);
+        List<BsonDocument> appendedResult = findAllDocuments();
+        assertEquals(appendedResult.size(), 1);
+        assertEquals(appendedDoc, appendedResult.get(0));
 
-        // no replacement
+        // upsert (insert)
         MongoRowDataSinkFunction upsertSinkFunction = createSinkFunction(serConverter, "name");
-        executeSink(upsertSinkFunction, nonReplacementRow);
-        List<BsonDocument> nonReplacementResult = findAllDocuments();
-        assertEquals(nonReplacementResult.size(), 1);
-        assertEquals(originDoc, nonReplacementResult.get(0)); // No change
+        executeSink(upsertSinkFunction, insertedRow);
+        List<BsonDocument> insertedResult = findAllDocuments();
+        assertEquals(2, insertedResult.size());
+        assertEquals(insertedResult, Arrays.asList(appendedDoc, insertedDoc));
 
-        // replacement
+        // upsert (replace)
         MongoRowDataSinkFunction upsertSinkFunction2 = createSinkFunction(serConverter, "name");
-        executeSink(upsertSinkFunction2, replacementRow);
-        List<BsonDocument> replacementResult = findAllDocuments();
-        assertEquals(replacementResult.size(), 1);
-        assertEquals(replacementDoc, replacementResult.get(0));
+        executeSink(upsertSinkFunction2, replacedRow);
+        List<BsonDocument> replacedResult = findAllDocuments();
+        assertEquals(replacedResult.size(), 2);
+        assertEquals(replacedResult, Arrays.asList(replacedDoc, insertedDoc));
     }
 
     private void executeSink(MongoRowDataSinkFunction sinkFunction, RowData rowData) throws Exception {

@@ -6,6 +6,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
@@ -101,21 +102,24 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
             // Bulk write
             //flush(bsonDocument);
         } else {
-            // upsert
-            replaceOne(row, keyNames);
+            // replace or insert
+            replaceSert(row, keyNames);
         }
     }
 
     /**
      * Replace data when filter conditions are met
      */
-    private void replaceOne(RowData rowData, String[] keyNames) {
+    private void replaceSert(RowData rowData, String[] keyNames) {
+        // upsert
+        ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
         // 不需要 keyNames -> keyTypes -> keyConverter，因为需要替换所以会有一个全集
         // 但是 Lookup 需要这么做，参考 JDBC JdbcRowDataLookupFunction
         BsonDocument replacement = mongoSerConverter.toExternal(rowData);
         BsonDocument filter = new BsonDocument();
         mongoSerConverter.toExternal(rowData, keyNames, filter);
-        mgCollection.replaceOne(filter, replacement);
+        // replace one or insert
+        mgCollection.replaceOne(filter, replacement, replaceOptions);
     }
 
     private void flush(BsonDocument bsonDocument) throws MongoSinkException {
