@@ -1,50 +1,74 @@
 package cn.guruguru.flink.connector.mongo;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.*;
+import static com.mongodb.client.model.Updates.inc;
+import static com.mongodb.client.model.Updates.set;
 import static org.junit.Assert.assertEquals;
 
 public class MongoITCase extends MongoTestingClusterAutoStarter {
 
     private final String TEST_MG_DATABASE = "testDatabase";
-    private final String TEST_MG_COLLECTION_1 = "testCollection1";
-    private final String TEST_MG_COLLECTION_2 = "testCollection2";
-    private final String TEST_MG_COLLECTION_3 = "testCollection3";
+    private final String TEST_MG_COLLECTION = "testCollection";
 
-    // ~ insert and query ----------------------------------------------
+    // ~ insert, upsert and query ----------------------------------------------
 
     @Test
-    public void testInsertOneAndQuery() {
+    public void testInsertOneAndReplaceOne() {
         MongoCollection<BsonDocument> mgCollection = getTestMongoClient()
                 .getDatabase(TEST_MG_DATABASE)
-                .getCollection(TEST_MG_COLLECTION_1, BsonDocument.class);
+                .getCollection(TEST_MG_COLLECTION, BsonDocument.class);
 
+        BsonObjectId objectId = new BsonObjectId();
+        BsonDocument origin = new BsonDocument()
+                .append("_id", objectId)
+                .append("k1", new BsonString("value"))
+                .append("k2", new BsonInt32(100));
+
+        BsonDocument replacement = new BsonDocument()
+                //.append("_id", new BsonObjectId()) // ObjectId is imutable
+                .append("x", new BsonInt32(100))
+                .append("y", new BsonInt32(200));
+        BsonDocument filter = new BsonDocument()
+                .append("k1", new BsonString("value"));
+        BsonDocument expectedReplacement = replacement.append("_id", objectId);
+
+        // Compare numbers before applying a operation
         assertEquals(0, mgCollection.countDocuments());
 
-        BsonDocument document = new BsonDocument("_id", new BsonObjectId())
-                .append("key", new BsonString("value"));
-        mgCollection.insertOne(document);
+        // insert
+        mgCollection.insertOne(origin);
 
-        // Compare numbers and results
+        // Compare numbers and results after insert a document
         assertEquals(1, mgCollection.countDocuments());
-        assertEquals(document, mgCollection.find().first()); // findOne
+        assertEquals(origin, mgCollection.find().first()); // findOne
+
+        // replace
+        mgCollection.replaceOne(filter, replacement);
+
+        // Compare numbers and results after replace a document
+        assertEquals(1, mgCollection.countDocuments());
+        assertEquals(expectedReplacement, mgCollection.find().first());
     }
 
     @Test
-    public void testInsertManyAndQuery() {
+    public void testInsertMany() {
         MongoCollection<BsonDocument> mgCollection = getTestMongoClient()
                 .getDatabase(TEST_MG_DATABASE)
-                .getCollection(TEST_MG_COLLECTION_1, BsonDocument.class);
+                .getCollection(TEST_MG_COLLECTION, BsonDocument.class);
 
         assertEquals(0, mgCollection.countDocuments());
 
@@ -172,27 +196,27 @@ public class MongoITCase extends MongoTestingClusterAutoStarter {
         assertEquals(expected, resultSet);
     }
 
-//    @Test
-//    public void testUpdateOne() {
-//        mongoBuilder.getCollection().updateOne(eq("i", 10), set("i", 20));
-//    }
-//
-//    @Test
-//    public void testUpdateMany() {
-//        UpdateResult updateResult = mongoBuilder.getCollection().updateMany(eq("a", 1), inc("a", 10));
-//        System.out.println(updateResult.getMatchedCount());
-//        System.out.println(updateResult.getModifiedCount());
-//    }
-//
-//    @Test
-//    public void testDeleteOne() {
-//        DeleteResult deleteResult = mongoBuilder.getCollection().deleteOne(eq("a", 1));
-//        System.out.println(deleteResult.getDeletedCount());
-//    }
-//
-//    @Test
-//    public void testDeleteMany() {
-//        DeleteResult deleteResult = mongoBuilder.getCollection().deleteMany(eq("a", 1));
-//        System.out.println(deleteResult.getDeletedCount());
-//    }
+    @Ignore
+    public void testUpdateOne() {
+        getTestMongoCollection().updateOne(eq("i", 10), set("i", 20));
+    }
+
+    @Ignore
+    public void testUpdateMany() {
+        UpdateResult updateResult = getTestMongoCollection().updateMany(eq("a", 1), inc("a", 10));
+        System.out.println(updateResult.getMatchedCount());
+        System.out.println(updateResult.getModifiedCount());
+    }
+
+    @Ignore
+    public void testDeleteOne() {
+        DeleteResult deleteResult = getTestMongoCollection().deleteOne(eq("a", 1));
+        System.out.println(deleteResult.getDeletedCount());
+    }
+
+    @Ignore
+    public void testDeleteMany() {
+        DeleteResult deleteResult = getTestMongoCollection().deleteMany(eq("a", 1));
+        System.out.println(deleteResult.getDeletedCount());
+    }
 }

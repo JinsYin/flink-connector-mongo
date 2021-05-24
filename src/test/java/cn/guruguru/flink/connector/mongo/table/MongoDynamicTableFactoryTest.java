@@ -42,9 +42,8 @@ public class MongoDynamicTableFactoryTest {
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
-    @Test
+    @Ignore
     public void testDynamicTableSourceFactory() {
-
     }
 
     @Test
@@ -72,7 +71,7 @@ public class MongoDynamicTableFactoryTest {
         MongoDynamicTableSink mongoSink = (MongoDynamicTableSink) sink;
     }
 
-    // -----
+    // ------------------------------------------------------------
 
     @Test
     @Ignore
@@ -93,7 +92,7 @@ public class MongoDynamicTableFactoryTest {
         createDynamicTableSink(tableSchema, getAllOptions());
     }
 
-    // -----
+    // ------------------------------------------------------------
 
     private Map<String, String> getAllOptions() {
         Map<String, String> options = new HashMap<>();

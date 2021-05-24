@@ -2,14 +2,18 @@ package cn.guruguru.flink.connector.mongo.internal.conveter;
 
 import org.bson.BsonDocument;
 
-public class MongoPojoSerializationConverter<T> implements MgSerializationConverter {
+/**
+ * TODO
+ */
+public class MongoPojoSerializationConverter<T> implements MgSerializationConverter<T> {
+
     @Override
-    public BsonDocument toExternal(Object data) throws MongoTypeConversionException {
+    public BsonDocument toExternal(Object data, BsonDocument doc) throws MongoTypeConversionException {
         return null;
     }
 
     @Override
-    public BsonDocument toExternal(Object data, BsonDocument bsonDocument) throws MongoTypeConversionException {
+    public BsonDocument toExternal(T data, String[] fields, BsonDocument doc) throws MongoTypeConversionException {
         return null;
     }
 }

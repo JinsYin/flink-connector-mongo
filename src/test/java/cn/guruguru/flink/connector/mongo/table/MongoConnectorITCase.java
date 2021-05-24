@@ -50,7 +50,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * End to end tests for {@link MongoDynamicTableFactory}.
  *
- * see org.apache.flink.table.planner.runtime.stream.table.PrintConnectorITCase
+ * @see org.apache.flink.table.planner.runtime.stream.table.PrintConnectorITCase
  */
 public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
 
@@ -85,7 +85,7 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
         }
         getTestMongoCollection().insertMany(documents);
 
-        EnvironmentSettings settings = EnvironmentSettings.newInstance().useBlinkPlanner().inBatchMode().build();
+        EnvironmentSettings settings = EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
         TableEnvironment tEnv = TableEnvironment.create(settings);
 
         String table1DDL = "CREATE TABLE " + TEST_TABLE_1  + "(\n" +
@@ -209,12 +209,13 @@ public class MongoConnectorITCase extends MongoTestingClusterAutoStarter {
         MongoRowDataSerializationConverter serConverter = new MongoRowDataSerializationConverter(rowType);
         MongoRowDataSinkFunction sinkFunction1 = new MongoRowDataSinkFunction(
                 serConverter,
+                new String[]{},
                 getTestMongoUri(),
                 getDefaultTestDatabaseName(),
                 getDefaultTestCollectionName(),
                 3,
                 3,
-                3,
+                0,
                 true
         );
 

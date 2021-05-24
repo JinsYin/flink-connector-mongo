@@ -11,6 +11,10 @@ import org.apache.flink.table.connector.sink.SinkFunctionProvider;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.types.RowKind;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * see org.apache.flink.table.factories.PrintTableSinkFactory.PrintSink
  */
@@ -39,6 +43,7 @@ public class MongoDynamicTableSink implements DynamicTableSink {
         return ChangelogMode.newBuilder()
                 .addContainedKind(RowKind.INSERT)
                 .addContainedKind(RowKind.DELETE)
+                .addContainedKind(RowKind.UPDATE_BEFORE)
                 .addContainedKind(RowKind.UPDATE_AFTER)
                 .build();
     }
@@ -47,11 +52,14 @@ public class MongoDynamicTableSink implements DynamicTableSink {
     public SinkFunctionProvider getSinkRuntimeProvider(Context context) {
         RowType rowType = (RowType) tableSchema.toPhysicalRowDataType().getLogicalType();
         MongoRowDataSerializationConverter serConverter = new MongoRowDataSerializationConverter(rowType);
-
         context.createDataStructureConverter(tableSchema.toPhysicalRowDataType());
+
+        List<String> keyNameList = new ArrayList<>();
+        tableSchema.getPrimaryKey().ifPresent(key -> key.getColumns().stream().collect(Collectors.toCollection(() -> keyNameList)));
 
         MongoRowDataSinkFunction sinkFunction = new MongoRowDataSinkFunction(
                 serConverter,
+                keyNameList.toArray(new String[]{}),
                 mongoOptions.getUri(),
                 mongoOptions.getDatabaseName(),
                 mongoOptions.getCollectionName(),

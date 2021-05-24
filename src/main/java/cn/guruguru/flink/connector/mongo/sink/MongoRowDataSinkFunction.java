@@ -31,6 +31,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
     private static final BulkWriteOptions BULK_WRITE_OPTIONS = new BulkWriteOptions();
 
     private final MgSerializationConverter<RowData> mongoSerConverter; // MongoSerializationConverter is serializable
+    private final String[] keyNames;
     private final String uri;
     private final String databaseName;
     private final String collectionName;
@@ -50,6 +51,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
 
     public MongoRowDataSinkFunction(
             MgSerializationConverter<RowData> mongoSerConverter,
+            String[] keyNames,
             String uri,
             String databaseName,
             String collectionName,
@@ -58,6 +60,7 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
             long batchIntervalMs,
             boolean ordered) {
         this.mongoSerConverter = mongoSerConverter;
+        this.keyNames = keyNames;
         this.uri = uri;
         this.databaseName = databaseName;
         this.collectionName = collectionName;
@@ -72,14 +75,14 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
     @Override
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
-        LOG.info("Starting MongoDB connection");
+        LOG.debug("Starting MongoDB connection");
 
         mgClient = new DefaultMongoClientFactory(uri).create();
         mgCollection = mgClient
                 .getDatabase(databaseName)
                 .getCollection(collectionName, BsonDocument.class);
 
-        LOG.info("Started MongoDB connection");
+        LOG.debug("Started MongoDB connection");
     }
 
     // --------------- RichSinkFunction ---------------
@@ -88,15 +91,31 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
      * Save data to MongoDB
      */
     @Override
-    public void invoke(RowData rowData, Context context) {
+    public void invoke(RowData row, Context context) {
         // Convert the RowData to the BsonDocument
-        BsonDocument bsonDocument = mongoSerConverter.toExternal(rowData);
+        BsonDocument doc = mongoSerConverter.toExternal(row);
 
-        // Insert one
-        mgCollection.insertOne(bsonDocument);
+        if (keyNames.length == 0) {
+            // insert
+            mgCollection.insertOne(doc);
+            // Bulk write
+            //flush(bsonDocument);
+        } else {
+            // upsert
+            replaceOne(row, keyNames);
+        }
+    }
 
-        // Bulk write
-        //flush(bsonDocument);
+    /**
+     * Replace data when filter conditions are met
+     */
+    private void replaceOne(RowData rowData, String[] keyNames) {
+        // 不需要 keyNames -> keyTypes -> keyConverter，因为需要替换所以会有一个全集
+        // 但是 Lookup 需要这么做，参考 JDBC JdbcRowDataLookupFunction
+        BsonDocument replacement = mongoSerConverter.toExternal(rowData);
+        BsonDocument filter = new BsonDocument();
+        mongoSerConverter.toExternal(rowData, keyNames, filter);
+        mgCollection.replaceOne(filter, replacement);
     }
 
     private void flush(BsonDocument bsonDocument) throws MongoSinkException {

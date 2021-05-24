@@ -1,16 +1,20 @@
 package cn.guruguru.flink.connector.mongo.internal.conveter;
 
+import org.apache.flink.api.java.tuple.Tuple;
 import org.bson.BsonDocument;
 
-public class MongoTupleDeserializationConverter implements MgDeserializationConverter {
+/**
+ * TODO
+ */
+public class MongoTupleDeserializationConverter implements MgDeserializationConverter<Tuple> {
 
     @Override
-    public Object toInternal(BsonDocument bsonDocument) throws MongoTypeConversionException {
+    public Tuple toInternal(BsonDocument doc) throws MongoTypeConversionException {
         return null;
     }
 
     @Override
-    public Object toInternal(BsonDocument bsonDocument, Object o) throws MongoTypeConversionException {
+    public Tuple toInternal(BsonDocument doc, Tuple tuple) throws MongoTypeConversionException {
         return null;
     }
 }

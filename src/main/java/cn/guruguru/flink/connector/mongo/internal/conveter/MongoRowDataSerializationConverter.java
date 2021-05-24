@@ -41,20 +41,21 @@ public class MongoRowDataSerializationConverter implements MgSerializationConver
     // ~ methods ---------------------------------------------------
 
     @Override
-    public BsonDocument toExternal(RowData rowData) throws MongoTypeConversionException {
-        BsonDocument bsonDocument = new BsonDocument();
-        for (int index = 0; index < rowData.getArity(); index++) {
-            toExternalSetters[index].set(bsonDocument, index, rowData);
+    public BsonDocument toExternal(RowData row, BsonDocument doc) throws MongoTypeConversionException {
+        for (int pos = 0; pos < row.getArity(); pos++) {
+            toExternalSetters[pos].set(doc, pos, row);
         }
-        return bsonDocument;
+        return doc;
     }
 
     @Override
-    public BsonDocument toExternal(RowData rowData, BsonDocument bsonDocument) throws MongoTypeConversionException {
-        for (int index = 0; index < rowData.getArity(); index++) {
-            toExternalSetters[index].set(bsonDocument, index, rowData);
+    public BsonDocument toExternal(RowData row, String[] fields, BsonDocument doc)
+            throws MongoTypeConversionException {
+        for (int index = 0; index < fields.length; index++) {
+            int pos = rowType.getFieldIndex(fields[index]);
+            toExternalSetters[index].set(doc, pos, row);
         }
-        return bsonDocument;
+        return doc;
     }
 
     // --------------------------------------------------------------
@@ -63,7 +64,7 @@ public class MongoRowDataSerializationConverter implements MgSerializationConver
 
     @FunctionalInterface
     private interface MongoSerializationSetter extends Serializable {
-        void set(BsonDocument doc, int pos, RowData row); // doc.put(fieldNames[pos], row.getField(pos))
+        void set(BsonDocument doc, int pos, RowData row); // principle: doc.put(fieldNames[pos], row.getField(pos))
     }
 
     @FunctionalInterface
@@ -110,7 +111,7 @@ public class MongoRowDataSerializationConverter implements MgSerializationConver
                 // BinaryRowData cannot be cast to org.apache.flink.table.data.GenericRowData
                 value = ((GenericRowData) row).getField(pos);
             }
-            doc.append(fieldName, createNullableExternalConverter(type).serialize(value));
+            doc.append(fieldName, createNullableExternalConverter(type).serialize(value)); // doc.put()
         };
     }
 

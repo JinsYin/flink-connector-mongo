@@ -23,12 +23,12 @@ import java.util.Collections;
  */
 public class MongoTestingClusterAutoStarter extends AbstractTestBase {
 
+
     public static final String DEFAULT_DATABASE_NAME_FOR_IT = "testDatabase";
     public static final String DEFAULT_COLLECTION_NAME_FOR_IT = "testCollection";
 
     private static MongoServer mongoServer;
     private static MongoClient mongoClient;
-
     private static InetSocketAddress inetSocketAddress;
 
     @Before
