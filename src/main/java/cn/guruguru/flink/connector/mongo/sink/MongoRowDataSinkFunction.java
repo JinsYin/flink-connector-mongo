@@ -5,8 +5,8 @@ import cn.guruguru.flink.connector.mongo.internal.conveter.MgSerializationConver
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.InsertManyOptions;
-import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.InsertManyResult;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
@@ -109,17 +109,19 @@ public class MongoRowDataSinkFunction extends RichSinkFunction<RowData> implemen
 
     /**
      * Replace data when filter conditions are met
+     *
+     * <a href="https://stackoverflow.com/questions/36895238/mongodb-c-sharp-api-v2-difference-between-replaceone-and-findoneandreplace">
+     *     Difference between ReplaceOne and FindOneAndReplace
+     * </a>
      */
     private void replaceSert(RowData rowData, String[] keyNames) {
-        // upsert
-        ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
         // 不需要 keyNames -> keyTypes -> keyConverter，因为需要替换所以会有一个全集
         // 但是 Lookup 需要这么做，参考 JDBC JdbcRowDataLookupFunction
         BsonDocument replacement = mongoSerConverter.toExternal(rowData);
-        BsonDocument filter = new BsonDocument();
-        mongoSerConverter.toExternal(rowData, keyNames, filter);
-        // replace one or insert
-        mgCollection.replaceOne(filter, replacement, replaceOptions);
+        BsonDocument filter = mongoSerConverter.toExternal(rowData, keyNames);
+        // Atomically find a document and replace/insert it.
+        FindOneAndReplaceOptions options = new FindOneAndReplaceOptions().upsert(true);
+        mgCollection.findOneAndReplace(filter, replacement, options);
     }
 
     private void flush(BsonDocument bsonDocument) throws MongoSinkException {

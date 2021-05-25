@@ -49,11 +49,11 @@ public class MongoRowDataSerializationConverter implements MgSerializationConver
     }
 
     @Override
-    public BsonDocument toExternal(RowData row, String[] fields, BsonDocument doc)
+    public BsonDocument toExternal(RowData row, String[] keyNames, BsonDocument doc)
             throws MongoTypeConversionException {
-        for (int index = 0; index < fields.length; index++) {
-            int pos = rowType.getFieldIndex(fields[index]);
-            toExternalSetters[index].set(doc, pos, row);
+        for (int index = 0; index < keyNames.length; index++) {
+            int pos = rowType.getFieldIndex(keyNames[index]);
+            toExternalSetters[pos].set(doc, pos, row);
         }
         return doc;
     }
