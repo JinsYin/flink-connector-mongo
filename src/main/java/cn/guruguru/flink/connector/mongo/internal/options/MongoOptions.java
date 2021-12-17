@@ -6,6 +6,11 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
+/**
+ * Mongodb connection options
+ *
+ * @author JinsYin
+ */
 public class MongoOptions implements Serializable {
     private static final long serialVersionUID = 1L;
 

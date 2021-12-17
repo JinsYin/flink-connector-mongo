@@ -17,6 +17,8 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
  * Class for converting {@link BsonDocument} to {@link RowData}
+ *
+ * @author JinsYin
  */
 public class MongoRowDataDeserializationConverter implements MgDeserializationConverter<RowData> {
 

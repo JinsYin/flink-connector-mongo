@@ -17,7 +17,7 @@ public class MongoLookupOptions implements Serializable {
     private final int cacheMaxRows;
     private final Duration cacheTtl;
     private final int maxRetries;
-    private boolean excludeId;
+    private final boolean excludeId;
 
     // ~ constructor --------------------------------------
 

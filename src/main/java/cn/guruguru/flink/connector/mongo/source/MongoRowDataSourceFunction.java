@@ -16,12 +16,14 @@ import org.bson.BsonDocument;
 import static com.mongodb.client.model.Projections.exclude;
 
 /**
+ * Source function for reading mongodb, it converts {@link BsonDocument} to {@link RowData}.
  *
  * The {@link RichSourceFunction} extends {@link AbstractRichFunction} class
  * and implements {@link org.apache.flink.streaming.api.functions.source.SourceFunction} interface.
  *
  * @see cn.guruguru.flink.connector.mongo.internal.options.MongoReadOptions
  * @see org.apache.flink.streaming.api.functions.source.datagen.DataGeneratorSource
+ * @author JinsYin
  */
 public class MongoRowDataSourceFunction<RowData> extends RichSourceFunction<RowData> implements CheckpointedFunction {
 

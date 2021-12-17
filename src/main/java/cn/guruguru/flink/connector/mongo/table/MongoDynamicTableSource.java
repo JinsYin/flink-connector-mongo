@@ -24,11 +24,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The LookupTableSource and ScanTableSource extend {@link DynamicTableSource}
+ * Mongodb dynamic table for reading and joining.
  *
- * see org.apache.flink.table.factories.DataGenTableSourceFactory.DataGenTableSource
+ * <p>The LookupTableSource and ScanTableSource extend {@link DynamicTableSource}
  *
+ * @see org.apache.flink.table.factories.DataGenTableSourceFactory.DataGenTableSource
  * @see org.apache.flink.streaming.api.functions.source.datagen.DataGeneratorSource
+ * @author JinsYin
  */
 public class MongoDynamicTableSource implements ScanTableSource, LookupTableSource, SupportsProjectionPushDown {
 

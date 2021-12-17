@@ -21,6 +21,7 @@ import static com.mongodb.client.model.Projections.exclude;
  * Table Function which is used for Flink framework in runtime
  *
  * @see cn.guruguru.flink.connector.mongo.internal.options.MongoLookupOptions
+ * @author JinsYin
  */
 @Internal
 public class MongoRowDataLookupFunction extends TableFunction<RowData> { // @Internal: RowData, @Public: Row

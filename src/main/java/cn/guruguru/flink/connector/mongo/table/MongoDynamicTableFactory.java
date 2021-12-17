@@ -22,8 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Mongodb dynamic table factory.
+ *
  * @see org.apache.flink.table.factories.DataGenTableSourceFactory
  * @see org.apache.flink.table.factories.PrintTableSinkFactory
+ * @author JinsYin
  */
 public class MongoDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
 
