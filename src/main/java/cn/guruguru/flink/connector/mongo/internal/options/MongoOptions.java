@@ -58,6 +58,8 @@ public class MongoOptions implements Serializable {
          * required, mongodb uri
          *
          * @see com.mongodb.ConnectionString
+         * @param uri MongoDB URI
+         * @return {@link Builder}
          */
         public Builder setUri(String uri) {
             this.uri = uri;
@@ -66,6 +68,9 @@ public class MongoOptions implements Serializable {
 
         /**
          * optional, database name
+         *
+         * @param databaseName database name
+         * @return {@link Builder}
          */
         public Builder setDatabaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -74,6 +79,9 @@ public class MongoOptions implements Serializable {
 
         /**
          * optional, collection name
+         *
+         * @param collectionName name of the MongoDB collection
+         * @return {@link Builder}
          */
         public Builder setCollectionName(String collectionName) {
             this.collectionName = collectionName;

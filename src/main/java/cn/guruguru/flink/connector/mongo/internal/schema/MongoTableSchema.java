@@ -36,6 +36,9 @@ public class MongoTableSchema implements Serializable {
 
     /**
      * Construct a {@link MongoTableSchema} from a {@link TableSchema}.
+     *
+     * @param tableSchema schema
+     * @return a {@link MongoTableSchema}
      */
     public static MongoTableSchema fromTableSchema(TableSchema tableSchema) {
         MongoTableSchema mongoTableSchema = new MongoTableSchema();

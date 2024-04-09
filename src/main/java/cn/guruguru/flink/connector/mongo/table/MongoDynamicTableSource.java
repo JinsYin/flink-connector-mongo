@@ -28,7 +28,7 @@ import java.util.List;
  *
  * <p>The LookupTableSource and ScanTableSource extend {@link DynamicTableSource}
  *
- * @see org.apache.flink.table.factories.DataGenTableSourceFactory.DataGenTableSource
+ * @see org.apache.flink.table.factories.DataGenTableSourceFactory
  * @see org.apache.flink.streaming.api.functions.source.datagen.DataGeneratorSource
  * @author JinsYin
  */

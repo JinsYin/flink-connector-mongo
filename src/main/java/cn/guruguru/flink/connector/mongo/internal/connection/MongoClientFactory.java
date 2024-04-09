@@ -11,6 +11,8 @@ public interface MongoClientFactory extends Serializable {
 
     /**
      * Creates a `MongoClient`
+     *
+     * @return a {@link MongoClient}
      */
     MongoClient create();
 }

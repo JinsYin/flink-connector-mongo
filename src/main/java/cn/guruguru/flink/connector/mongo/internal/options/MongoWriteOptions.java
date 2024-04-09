@@ -64,6 +64,9 @@ public class MongoWriteOptions implements Serializable {
 
         /**
          * optional, max retries
+         *
+         * @param maxRetries max retries
+         * @return {@link Builder}
          */
         public Builder setMaxRetries(long maxRetries) {
             this.maxRetries = maxRetries;
@@ -72,6 +75,9 @@ public class MongoWriteOptions implements Serializable {
 
         /**
          * optional, max batch size
+         *
+         * @param batchSize batch size
+         * @return {@link Builder}
          */
         public Builder setBatchSize(int batchSize) {
             this.batchSize = batchSize;
@@ -80,6 +86,8 @@ public class MongoWriteOptions implements Serializable {
 
         /**
          * optional, batch interval in millisecond
+         * @param batchIntervalMs interval in ms
+         * @return {@link Builder}
          */
         public Builder setBatchIntervalMs(long batchIntervalMs) {
             this.batchIntervalMs = batchIntervalMs;
@@ -91,6 +99,8 @@ public class MongoWriteOptions implements Serializable {
          *
          * @see com.mongodb.client.model.BulkWriteOptions#ordered(boolean)
          * @see com.mongodb.client.model.InsertManyOptions#ordered(boolean)
+         * @param ordered order
+         * @return {@link Builder}
          */
         public Builder setOrdered(boolean ordered) {
             this.ordered = ordered;

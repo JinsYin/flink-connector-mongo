@@ -6,9 +6,21 @@ public interface MgSerializationConverter<T> extends MgConverter {
 
     /**
      * Converts record into MongoDB {@link BsonDocument}.
+     *
+     * @param data a record
+     * @param doc  a bson document
+     * @return a bson document
      */
     BsonDocument toExternal(T data, BsonDocument doc) throws MongoTypeConversionException;
 
+    /**
+     * Converts record into MongoDB {@link BsonDocument}.
+     *
+     * @param data a record
+     * @param fields field list
+     * @param doc a bson document
+     * @return a bson document
+     */
     BsonDocument toExternal(T data, String[] fields, BsonDocument doc) throws MongoTypeConversionException;
 
     default BsonDocument toExternal(T data) throws MongoTypeConversionException {

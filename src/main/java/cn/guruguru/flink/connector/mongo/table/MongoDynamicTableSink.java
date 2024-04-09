@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Mongodb dynamic table for writing.
  *
- * @see org.apache.flink.table.factories.PrintTableSinkFactory.PrintSink
+ * @see org.apache.flink.table.factories.PrintTableSinkFactory
  * @author JinsYin
  */
 public class MongoDynamicTableSink implements DynamicTableSink {
